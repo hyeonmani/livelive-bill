@@ -1,57 +1,112 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBy4aBEuHQ0sudR-zfifWgNHk0ZMWD_T54",
   authDomain: "livelive-bill.firebaseapp.com",
-  projectId: "livelive"
+  projectId: "livelive",
 };
 firebase.initializeApp(firebaseConfig);
 
-let idToken = "";
-let ADMIN_UID = "oixA3QuL3SN0UoMH7Bo7NG5icTi1"; // 서버에도 동일하게 맞춰야 함
+// let url = "https://your-backend-url.onrender.com"
+let url = "http://localhost:8080";
+
+// init Setting
+const path = window.location.pathname;
+
+if (path.endsWith("admin.html")) {
+  document.getElementById("expenseDate").value = new Date()
+    .toISOString()
+    .substring(0, 10);
+  loadUserDropdown();
+} else {
+  document.getElementById("baseDate").value = new Date()
+    .toISOString()
+    .substring(0, 10);
+
+  selectData();
+}
+
+// init Setting
 
 async function signIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
   const result = await firebase.auth().signInWithPopup(provider);
-  idToken = await result.user.getIdToken();
-  const uid = result.user.uid;
-  alert("로그인 성공: " + uid);
+  const idToken = await result.user.getIdToken();
 
-  if (uid === ADMIN_UID) {
-    document.getElementById("user-management").style.display = "block";
-    loadUsers();
+  // 토큰을 백엔드로 전송해서 관리자 확인
+  const response = await fetch("/api/checkAdmin", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+    },
+  });
+
+  const resultJson = await response.json();
+
+  if (resultJson.admin) {
+    window.location.href = "/admin.html";
+  } else {
+    alert("누구세요?");
+    firebase.auth().signOut();
   }
-  loadUserDropdown();
 }
 
-// 사용자 관리
+async function selectData() {
+  const baseDate = document.getElementById("baseDate").value;
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  if (!baseDate) {
+    alert("기준일 선택");
+    return;
+  }
+  const res = await fetch(
+    `${url}/api/expenses/selectData?baseDate=${baseDate}&mode=${mode}`
+  );
+  const arr = await res.json();
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  arr.forEach((e) => {
+    const tr = document.createElement("tr");
+    const delta = e.previous === 0 ? "-" : e.delta;
+    const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "";
+    const color = delta > 0 ? "red" : delta < 0 ? "blue" : "black";
+    tr.innerHTML = `<td>${e.user}</td>
+      <td>${e.current}</td>
+      <td style="color:${color}">${arrow} (${
+      delta > 0 ? "+" : ""
+    }${delta})</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
 async function addUser() {
-  const name = document.getElementById("new-username").value;
-  await fetch("https://your-backend-url.onrender.com/api/users", {
+  const name = document.getElementById("userName").value.trim();
+  if (!name) return alert("이름을 입력하세요.");
+
+  await fetch(`${url}/api/users`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer " + idToken
+      Authorization: "Bearer " + idToken,
     },
-    body: JSON.stringify({ name })
+    body: JSON.stringify({ name }),
   });
-  document.getElementById("new-username").value = "";
+
+  document.getElementById("userName").value = "";
   loadUsers();
-  loadUserDropdown();
 }
 
 async function loadUsers() {
-  const res = await fetch("https://your-backend-url.onrender.com/api/users");
+  const res = await fetch(`${url}`);
   const data = await res.json();
-  const list = document.getElementById("user-list");
+  const list = document.getElementById("userList");
   list.innerHTML = "";
-  data.forEach(user => {
+  data.forEach((user) => {
     const li = document.createElement("li");
     li.textContent = user.name;
     const delBtn = document.createElement("button");
     delBtn.textContent = "삭제";
     delBtn.onclick = async () => {
-      await fetch("https://your-backend-url.onrender.com/api/users/" + user.id, {
+      await fetch(`${url}` + user.id, {
         method: "DELETE",
-        headers: { "Authorization": "Bearer " + idToken }
+        headers: { Authorization: "Bearer " + idToken },
       });
       loadUsers();
       loadUserDropdown();
@@ -62,11 +117,11 @@ async function loadUsers() {
 }
 
 async function loadUserDropdown() {
-  const res = await fetch("https://your-backend-url.onrender.com/api/users");
+  const res = await fetch(`${url}/api/users`);
   const data = await res.json();
-  const select = document.getElementById("user-select");
+  const select = document.getElementById("userSelect");
   select.innerHTML = "";
-  data.forEach(user => {
+  data.forEach((user) => {
     const option = document.createElement("option");
     option.value = user.name;
     option.textContent = user.name;
@@ -74,45 +129,21 @@ async function loadUserDropdown() {
   });
 }
 
-// 금액 저장
 async function addExpense() {
-  const user = document.getElementById("user-select").value;
-  const date = document.getElementById("base-date").value;
-  const amount = parseInt(document.getElementById("amount-input").value);
-  await fetch("https://your-backend-url.onrender.com/api/expenses", {
+  const date = document.getElementById("expenseDate").value;
+  const user = document.getElementById("userSelect").value;
+  const amount = parseInt(document.getElementById("expenseAmount").value);
+  if (!date || !user || isNaN(amount)) return alert("모두 입력해주세요.");
+
+  await fetch(`${url}/api/expenses`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer " + idToken
+      Authorization: "Bearer " + idToken,
     },
-    body: JSON.stringify({ user, date, amount })
+    body: JSON.stringify({ user, date, amount }),
   });
-  alert("저장 완료");
-  document.getElementById("amount-input").value = "";
-}
 
-// 주간 조회
-function getWeekRange(baseDateStr) {
-  const baseDate = new Date(baseDateStr);
-  const day = baseDate.getDay();
-  const diffToMonday = (day === 0 ? -6 : 1 - day);
-  const monday = new Date(baseDate);
-  monday.setDate(baseDate.getDate() + diffToMonday);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  const format = (d) => d.toISOString().split('T')[0];
-  return [format(monday), format(sunday)];
-}
-
-async function fetchExpensesByWeek() {
-  const baseDate = document.getElementById('view-base-date').value;
-  if (!baseDate) return alert("기준일을 선택하세요!");
-  const [startDate, endDate] = getWeekRange(baseDate);
-  const res = await fetch(`https://your-backend-url.onrender.com/api/expenses/range?startDate=${startDate}&endDate=${endDate}`);
-  const data = await res.json();
-  const tbody = document.querySelector('#expense-table tbody');
-  tbody.innerHTML = '';
-  data.forEach(e => {
-    tbody.innerHTML += `<tr><td>${e.user}</td><td>${e.date}</td><td>${e.amount}</td></tr>`;
-  });
+  alert("등록되었습니다.");
+  document.getElementById("expenseAmount").value = "";
 }

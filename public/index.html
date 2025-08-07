@@ -1,39 +1,46 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>가계부 시스템 v2</title>
-</head>
-<body>
-  <h2>Firebase 로그인</h2>
-  <button onclick="signIn()">Google 로그인</button>
-  <hr/>
+  <head>
+    <meta charset="UTF-8" />
+    <title>생생레 영수증</title>
 
-  <h3>1. 사용자 관리 (로그인 사용자만 가능)</h3>
-  <div id="user-management" style="display:none;">
-    <input type="text" id="new-username" placeholder="사용자 이름">
-    <button onclick="addUser()">추가</button>
-    <ul id="user-list"></ul>
-  </div>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- 나디 전용 버튼 -->
+      <button name="signInBtn" onclick="signIn()" style="float: right;">나디 전용</button>
+      <h3>누가 마니 썯더요?</h3>
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+          <input type="radio" name="mode" id="modeWeek" value="week" onchange="selectData()" checked />주간
+        </label>
+        <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+          <input type="radio" name="mode" id="modeMonth" value="month" onchange="selectData()"/>월간
+        </label>
+      </div>
+      <br />
+      <div style="display: flex; align-items: center; gap: 10px; white-space: nowrap;">
+        <label for="baseDate">기준일</label>
+        <input type="date" id="baseDate" onchange="selectData()"/>
+      </div>
+      <button onclick="selectData()" style="display: none;">조회</button>  
+      <hr />
+      <table>
+        <thead>
+          <tr>
+            <th>사용자</th>
+            <th>금액</th>
+            <th>증감</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
 
-  <hr/>
-  <h3>2. 금액 입력</h3>
-  기준일자: <input type="date" id="base-date"><br/>
-  사용자: <select id="user-select"></select>
-  금액: <input type="number" id="amount-input">
-  <button onclick="addExpense()">금액 저장</button>
-
-  <hr/>
-  <h3>3. 주간 조회 (모든 사용자 가능)</h3>
-  기준일: <input type="date" id="view-base-date">
-  <button onclick="fetchExpensesByWeek()">조회</button>
-  <table border="1" id="expense-table">
-    <thead><tr><th>사용자</th><th>날짜</th><th>금액</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="script.js"></script>
-</body>
+    <!-- script -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>

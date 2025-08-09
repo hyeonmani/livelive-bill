@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: "livelive-bill",
   storageBucket: "livelive-bill.firebasestorage.app",
   messagingSenderId: "304274589421",
-  appId: "1:304274589421:web:5a70d6d710ec2e1467eee4"
+  appId: "1:304274589421:web:ba937660c14b969367eee4"
 };
 
 

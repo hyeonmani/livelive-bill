@@ -58,23 +58,41 @@ public class ExpenseController {
         Map<String, Integer> current = new HashMap<>();
         Map<String, Integer> previous = new HashMap<>();
 
+        // 날짜 범위 내의 날짜 리스트 만들기
+        List<LocalDate> dateRange = new ArrayList<>();
+        for (LocalDate date = prevStart; !date.isAfter(end); date = date.plusDays(1)) {
+            dateRange.add(date);
+        }
+
         CountDownLatch latch = new CountDownLatch(1);
 
         expenseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snap) {
-                for (DataSnapshot ch : snap.getChildren()) {
-                    Map<String, Object> e = (Map<String, Object>) ch.getValue();
-                    String user = (String) e.get("user");
-                    LocalDate d2 = LocalDate.parse((String) e.get("date"));
-                    int amt = ((Number) e.get("amount")).intValue();
+                // snapshot은 expenses 루트: date 노드들이 있음
+                for (LocalDate date : dateRange) {
+                    String dateStr = date.toString();
+                    DataSnapshot dateNode = snap.child(dateStr);
+                    if (dateNode.exists()) {
+                        for (DataSnapshot userNode : dateNode.getChildren()) {
+                            Map<String, Object> e = (Map<String, Object>) userNode.getValue();
+                            String user = userNode.getKey(); // user = name (key)
+                            Integer amt = null;
+                            Object amountObj = e.get("amount");
+                            if (amountObj instanceof Number) {
+                                amt = ((Number) amountObj).intValue();
+                            } else if (amountObj instanceof String) {
+                                try {
+                                    amt = Integer.parseInt((String) amountObj);
+                                } catch (NumberFormatException ignored) {}
+                            }
 
-                    if (user != null) {
-                        if (!user.isEmpty()) {
-                            if (!d2.isBefore(start) && !d2.isAfter(end)) {
-                                current.merge(user, amt, Integer::sum);
-                            } else if (!d2.isBefore(prevStart) && d2.isBefore(start)) {
-                                previous.merge(user, amt, Integer::sum);
+                            if (user != null && amt != null) {
+                                if (!date.isBefore(start) && !date.isAfter(end)) {
+                                    current.merge(user, amt, Integer::sum);
+                                } else if (!date.isBefore(prevStart) && date.isBefore(start)) {
+                                    previous.merge(user, amt, Integer::sum);
+                                }
                             }
                         }
                     }

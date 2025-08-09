@@ -64,6 +64,7 @@ public class UserController {
 
         try {
             String userId = userRef.push().getKey();
+            userData.put("userId", userId);
             userRef.child(userId).setValueAsync(userData);
 
         } catch (Exception e) {
@@ -72,12 +73,12 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public void updateUser(@PathVariable String userId, @RequestBody Map<String, Object> userData) {
+    public void updateUser(@PathVariable("userId") String userId, @RequestBody Map<String, Object> userData) {
         userRef.child(userId).updateChildrenAsync(userData);
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable String userId) {
+    public void deleteUser(@PathVariable("userId") String userId) {
         userRef.child(userId).removeValueAsync();
     }
 

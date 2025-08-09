@@ -25,12 +25,12 @@ if (path.endsWith("admin.html")) {
 }
 
 // init Setting
-
 async function signIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
   const result = await firebase.auth().signInWithPopup(provider);
   const idToken = await result.user.getIdToken();
 
+  sessionStorage.setItem('idToken', idToken);
   // 토큰을 백엔드로 전송해서 관리자 확인
   const response = await fetch(`${url}/api/checkAdmin`, {
     method: "POST",
@@ -80,6 +80,8 @@ async function addUser() {
   const name = document.getElementById("userName").value.trim();
   if (!name) return alert("이름을 입력하세요.");
 
+  const idToken = sessionStorage.getItem('idToken');
+
   await fetch(`${url}/api/users`, {
     method: "POST",
     headers: {
@@ -94,9 +96,11 @@ async function addUser() {
 }
 
 async function loadUsers() {
-  const res = await fetch(`${url}`);
+  const res = await fetch(`${url}/api/users`);
   const data = await res.json();
   const list = document.getElementById("userList");
+  const idToken = sessionStorage.getItem('idToken');
+
   list.innerHTML = "";
   data.forEach((user) => {
     const li = document.createElement("li");
@@ -104,16 +108,17 @@ async function loadUsers() {
     const delBtn = document.createElement("button");
     delBtn.textContent = "삭제";
     delBtn.onclick = async () => {
-      await fetch(`${url}` + user.id, {
+      await fetch(`${url}/api/users/` + user.userId, {
         method: "DELETE",
         headers: { Authorization: "Bearer " + idToken },
       });
       loadUsers();
-      loadUserDropdown();
     };
     li.appendChild(delBtn);
     list.appendChild(li);
   });
+
+  loadUserDropdown();
 }
 
 async function loadUserDropdown() {
@@ -131,17 +136,19 @@ async function loadUserDropdown() {
 
 async function addExpense() {
   const date = document.getElementById("expenseDate").value;
-  const user = document.getElementById("userSelect").value;
+  const name = document.getElementById("userSelect").value;
   const amount = parseInt(document.getElementById("expenseAmount").value);
-  if (!date || !user || isNaN(amount)) return alert("모두 입력해주세요.");
+  if (!date || !name || isNaN(amount)) return alert("모두 입력해주세요.");
 
-  await fetch(`${url}/api/expenses`, {
-    method: "POST",
+  const idToken = sessionStorage.getItem('idToken');
+
+  await fetch(`${url}/api/expenses/${date}/${name}`, {
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + idToken,
     },
-    body: JSON.stringify({ user, date, amount }),
+    body: JSON.stringify({ name, date, amount }),
   });
 
   alert("등록되었습니다.");

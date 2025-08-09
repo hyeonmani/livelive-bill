@@ -4,18 +4,17 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 
 @CrossOrigin(origins = "http://localhost:8080")
 @RestController
@@ -28,10 +27,16 @@ public class ExpenseController {
         this.expenseRef = expenseRef;
     }
 
-    @PostMapping
-    public void addExpense(@RequestBody Map<String, Object> expenseData) {
-        String expenseId = expenseRef.push().getKey();
-        expenseRef.child(expenseId).setValueAsync(expenseData);
+    @PutMapping("/{date}/{name}")
+    public void addExpense(@PathVariable("date") String date,
+                           @PathVariable("name") String name,
+                           @RequestBody Map<String, Object> expenseData) throws ExecutionException, InterruptedException {
+
+        // 경로: expenses/{date}/{name}
+        DatabaseReference targetRef = expenseRef.child(date).child(name);
+
+        // setValueAsync는 전체 덮어쓰기(수정/추가 모두 가능)
+        targetRef.setValueAsync(expenseData);
     }
 
     @GetMapping("/selectData")
@@ -97,7 +102,7 @@ public class ExpenseController {
             ));
         }
 
-        result.sort((x, y) -> ((Integer)y.get("current")).compareTo((Integer)x.get("current")));
+        result.sort((x, y) -> ((Integer) y.get("current")).compareTo((Integer) x.get("current")));
 
         return result;
     }

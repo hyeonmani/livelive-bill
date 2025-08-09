@@ -151,6 +151,6 @@ async function addExpense() {
     body: JSON.stringify({ name, date, amount }),
   });
 
-  alert("등록되었습니다.");
+  // alert("등록되었습니다.");
   document.getElementById("expenseAmount").value = "";
 }

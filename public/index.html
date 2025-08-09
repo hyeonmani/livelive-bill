@@ -8,35 +8,24 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-<div class="container">
-    <!-- 상단 버튼 영역 -->
-    <div class="header">
-      <button name="signInBtn" onclick="signIn()" class="sign-btn">나디 전용</button>
+    <div class="container">
+
       <h3>누가 마니 썯더요?</h3>
-    </div>
-
-    <!-- 주간/월간 선택 -->
-    <div class="mode-select">
-      <label>
-        <input type="radio" name="mode" id="modeWeek" value="week" onchange="selectData()" checked /> 주간
-      </label>
-      <label>
-        <input type="radio" name="mode" id="modeMonth" value="month" onchange="selectData()" /> 월간
-      </label>
-    </div>
-
-    <!-- 기준일 선택 -->
-    <div class="date-select">
-      <label for="baseDate">기준일</label>
-      <input type="date" id="baseDate" onchange="selectData()" />
-    </div>
-
-    <button onclick="selectData()" class="hidden-btn">조회</button>  
-
-    <hr />
-
-    <!-- 데이터 테이블 -->
-    <div class="table-wrapper">
+      <div style="display: flex; gap: 30%; align-items: center;">
+        <label style="display: flex; align-items: center; gap: 10%; white-space: nowrap;">
+          <input type="radio" name="mode" id="modeWeek" value="week" onchange="selectData()" checked />주간
+        </label>
+        <label style="display: flex; align-items: center; gap: 10%; white-space: nowrap;">
+          <input type="radio" name="mode" id="modeMonth" value="month" onchange="selectData()"/>월간
+        </label>
+      </div>
+      <br />
+      <div style="display: flex; align-items: center; gap: 1px; white-space: nowrap;">
+        <label for="baseDate">기준일</label>
+        <input type="date" id="baseDate" onchange="selectData()"/>
+      </div>
+      <button onclick="selectData()" style="display: none;">조회</button>  
+      <hr />
       <table>
         <thead>
           <tr>
@@ -47,8 +36,12 @@
         </thead>
         <tbody id="tbody"></tbody>
       </table>
+
+      
+      <!-- 나디 전용 버튼 -->
+       <br/>
+      <button class="signInBtn" onclick="signIn()">나디 전용</button>
     </div>
-  </div>
 
     <!-- script -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>

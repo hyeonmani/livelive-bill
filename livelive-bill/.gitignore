@@ -39,5 +39,3 @@ out/
 
 # .gitignore
 firebase-service-account.json
-
-/resources/static/

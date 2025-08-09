@@ -68,8 +68,8 @@ async function selectData() {
     const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "";
     const color = delta > 0 ? "red" : delta < 0 ? "blue" : "black";
     tr.innerHTML = `<td>${e.user}</td>
-      <td>${e.current.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")}</td>
-      <td style="color:${color}">${arrow} (${delta > 0 ? "+" : ""}${delta.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")})</td>`;
+      <td>${e.current ? new Intl.NumberFormat('ko-KR').format(e.current) : ""}</td>
+      <td style="color:${color}">${arrow} (${delta > 0 ? "+" : ""}${e.previous === 0 ? "-" : new Intl.NumberFormat('ko-KR').format(delta)})</td>`;
     tbody.appendChild(tr);
   });
 }

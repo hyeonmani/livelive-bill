@@ -1,25 +1,25 @@
-# 1단계: Gradle 빌드
+# 1단계: 빌드 단계
 FROM gradle:8.5-jdk17 AS builder
-
 WORKDIR /app
 
-# Gradle 설정 파일만 복사 (디렉토리로 끝남)
-COPY build.gradle settings.gradle gradlew gradlew.bat /app/
-COPY gradle /app/gradle/
+# Gradle 캐시 최적화 (설정파일 먼저 복사)
+COPY build.gradle settings.gradle /app/
 
-RUN ./gradlew dependencies --no-daemon || return 0
+# Gradle 캐시 미리 생성
+RUN gradle dependencies --no-daemon || true
 
 # 나머지 소스 복사
 COPY . /app/
 
-RUN ./gradlew clean build -x test --no-daemon
+# 테스트 스킵하고 빌드
+RUN gradle clean build -x test --no-daemon
 
-
-# 2단계: 실행 환경
+# 2단계: 실행 단계
 FROM eclipse-temurin:17-jdk
-
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/*.jar /app/app.jar
+# 빌드된 JAR 복사
+COPY --from=builder /app/build/libs/*.jar app.jar
 
+# 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "app.jar"]

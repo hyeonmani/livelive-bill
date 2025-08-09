@@ -1,28 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>관리자 전용 페이지</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <h2>🔐 나디 전용 페이지</h2>
-    <div id="container">
-      <h3>👤 사용자 관리</h3>
-      <input type="text" id="userName" placeholder="이름 입력" />
-      <button onclick="addUser()">추가</button>
-      <ul id="userList"></ul>
-      <h3>💰 금액 등록</h3>
-      기준일: <input type="date" id="expenseDate" />
-      <br/>
-      사용자:
-      <select id="userSelect"></select>
-      금액: <input type="number" id="expenseAmount" />
-      <button onclick="addExpense()">등록</button>
-    </div>
-    <a href="index.html">돌아가기</a>
 
-    <!-- script -->
+    <div id="container">
+      <!-- 사용자 관리 -->
+      <section>
+        <h3>👤 사용자 관리</h3>
+        <div class="form-row">
+          <input type="text" id="userName" placeholder="이름 입력" />
+          <button onclick="addUser()">추가</button>
+        </div>
+        <ul id="userList"></ul>
+      </section>
+
+      <!-- 금액 등록 -->
+      <section>
+        <h3>💰 금액 등록</h3>
+        <div class="form-row">
+          <label for="expenseDate">기준일:</label>
+          <input type="date" id="expenseDate" />
+        </div>
+
+        <div class="form-row">
+          <label for="userSelect">사용자:</label>
+          <select id="userSelect"></select>
+        </div>
+
+        <div class="form-row">
+          <label for="expenseAmount">금액:</label>
+          <input type="number" id="expenseAmount" />
+        </div>
+
+        <div class="form-row">
+          <button onclick="addExpense()">등록</button>
+        </div>
+      </section>
+    </div>
+
+    <p style="text-align:center; margin-top:20px;">
+      <a href="index.html">← 돌아가기</a>
+    </p>
+
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="script.js"></script>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>생생레 영수증</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- 나디 전용 버튼 -->
+      <button name="signInBtn" onclick="signIn()" style="float: right;">나디 전용</button>
+      <h3>누가 마니 썯더요?</h3>
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+          <input type="radio" name="mode" id="modeWeek" value="week" onchange="selectData()" checked />주간
+        </label>
+        <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+          <input type="radio" name="mode" id="modeMonth" value="month" onchange="selectData()"/>월간
+        </label>
+      </div>
+      <br />
+      <div style="display: flex; align-items: center; gap: 10px; white-space: nowrap;">
+        <label for="baseDate">기준일</label>
+        <input type="date" id="baseDate" onchange="selectData()"/>
+      </div>
+      <button onclick="selectData()" style="display: none;">조회</button>  
+      <hr />
+      <table>
+        <thead>
+          <tr>
+            <th>사용자</th>
+            <th>금액</th>
+            <th>증감</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- script -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

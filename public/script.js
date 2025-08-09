@@ -32,7 +32,7 @@ async function signIn() {
   const idToken = await result.user.getIdToken();
 
   // 토큰을 백엔드로 전송해서 관리자 확인
-  const response = await fetch("/api/checkAdmin", {
+  const response = await fetch(`${url}/api/checkAdmin`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${idToken}`,

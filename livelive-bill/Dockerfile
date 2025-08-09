@@ -1,16 +1,25 @@
-# 1. Gradle 빌드를 위한 이미지
+# 1단계: Gradle 빌드
 FROM gradle:8.5-jdk17 AS builder
 
-# 2. 프로젝트 복사 및 빌드
 WORKDIR /app
-COPY --chown=gradle:gradle . .
 
-# 3. 실제 실행 환경 이미지
+# Gradle 설정 파일만 복사 (디렉토리로 끝남)
+COPY build.gradle settings.gradle gradlew gradlew.bat /app/
+COPY gradle /app/gradle/
+
+RUN ./gradlew dependencies --no-daemon || return 0
+
+# 나머지 소스 복사
+COPY . /app/
+
+RUN ./gradlew clean build -x test --no-daemon
+
+
+# 2단계: 실행 환경
 FROM eclipse-temurin:17-jdk
+
 WORKDIR /app
 
-# 4. 빌드 결과 복사
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=builder /app/build/libs/*.jar /app/app.jar
 
-# 5. 실행 명령
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,25 +1,24 @@
-# 1단계: 빌드 단계
-FROM gradle:8.5-jdk17 AS builder
+# 1. 빌드를 위한 Gradle 빌드 이미지
+FROM gradle:7.6-jdk17 AS build
+
+# 프로젝트 작업 디렉토리 설정
 WORKDIR /app
 
-# Gradle 캐시 최적화 (설정파일 먼저 복사)
-COPY build.gradle settings.gradle /app/
+# Gradle Wrapper와 프로젝트 파일 복사
+COPY . /app
 
-# Gradle 캐시 미리 생성
-RUN gradle dependencies --no-daemon || true
+# Gradle Wrapper를 사용하여 빌드 실행
+RUN chmod +x ./gradlew
+RUN ./gradlew build --no-daemon
 
-# 나머지 소스 복사
-COPY . /app/
+# 2. 실행을 위한 OpenJDK 17 이미지
+FROM openjdk:17-jdk-slim
 
-# 테스트 스킵하고 빌드
-RUN gradle clean build -x test --no-daemon
-
-# 2단계: 실행 단계
-FROM eclipse-temurin:17-jdk
+# 실행할 작업 디렉토리 설정
 WORKDIR /app
 
-# 빌드된 JAR 복사
-COPY --from=builder /app/build/libs/*.jar app.jar
+# 빌드된 JAR 파일 복사 (위 빌드 단계에서 생성된 JAR)
+COPY --from=build /app/build/libs/*.jar app.jar
 
-# 애플리케이션 실행
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Spring Boot 애플리케이션 실행
+ENTRYPOINT ["nohup", "java", "-jar", "app.jar", "&"]
